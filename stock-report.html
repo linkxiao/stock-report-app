@@ -70,12 +70,19 @@ html,body{
   color:var(--text2);
   background:transparent;border:none;outline:none;cursor:pointer;
   border-radius:6px;transition:all 0.2s;
+  display:flex;align-items:center;justify-content:center;gap:8px;
 }
 
 .tab-btn.active{
   color:var(--text);
   background:var(--surface2);
   box-shadow:0 1px 3px rgba(0,0,0,0.2);
+}
+
+/* 国旗图标样式 */
+.flag-icon{
+  font-size:16px;
+  filter:drop-shadow(0 1px 2px rgba(0,0,0,0.3));
 }
 
 /* ─── 内容 ─── */
@@ -259,8 +266,8 @@ html,body{
   <div class="header-sub">财报日历 · 数据截至 2026-03-01</div>
   
   <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('us')">美股 Top10</button>
-    <button class="tab-btn" onclick="switchTab('hk')">港股 Top10</button>
+    <button class="tab-btn active" onclick="switchTab('us')"><span class="flag-icon">🇺🇸</span>美股 Top10</button>
+    <button class="tab-btn" onclick="switchTab('hk')"><span class="flag-icon">🇭🇰</span>港股 Top10</button>
   </div>
 </div>
 
