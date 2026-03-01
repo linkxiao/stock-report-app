@@ -1,0 +1,17 @@
+{
+  "name": "stock-report-app",
+  "version": "1.0.0",
+  "description": "港美股Top10公司财报分析应用",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5"
+  },
+  "keywords": ["stock", "financial", "report", "analysis"],
+  "author": "Stock Analysis Team",
+  "license": "MIT"
+}

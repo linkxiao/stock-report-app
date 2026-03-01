@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+<title>港美股 Top10 · 财报日历</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+
+:root{
+  --bg:#0a0a0f;
+  --surface:#111116;
+  --surface2:#1a1a20;
+  --border:rgba(255,255,255,0.08);
+  --text:#f8fafc;
+  --text2:#94a3b8;
+  --text3:#475569;
+  --blue:#60a5fa;
+  --green:#34d399;
+  --red:#f87171;
+  --amber:#fbbf24;
+  --purple:#a78bfa;
+  --r:12px;
+}
+
+html,body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','PingFang SC','Hiragino Sans GB',sans-serif;
+  min-height:100vh;
+  font-size:15px;
+  -webkit-font-smoothing:antialiased;
+  line-height:1.5;
+}
+
+/* ─── 顶部导航 ─── */
+.header{
+  position:sticky;top:0;z-index:200;
+  background:rgba(10,10,15,0.95);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  padding:20px 20px 16px;
+}
+
+.header-title{
+  font-size:24px;font-weight:700;
+  letter-spacing:-0.5px;
+  margin-bottom:4px;
+  background:linear-gradient(135deg,#f8fafc,#94a3b8);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+
+.header-sub{
+  font-size:13px;color:var(--text3);
+  margin-bottom:20px;
+}
+
+/* ─── Tab ─── */
+.tabs{
+  display:flex;gap:1px;
+  background:var(--border);border-radius:8px;
+  padding:2px;
+}
+
+.tab-btn{
+  flex:1;padding:12px 16px;
+  font-size:14px;font-weight:600;
+  color:var(--text2);
+  background:transparent;border:none;outline:none;cursor:pointer;
+  border-radius:6px;transition:all 0.2s;
+}
+
+.tab-btn.active{
+  color:var(--text);
+  background:var(--surface2);
+  box-shadow:0 1px 3px rgba(0,0,0,0.2);
+}
+
+/* ─── 内容 ─── */
+.content{padding:0 20px 40px;}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+
+/* ─── 股票列表 ─── */
+.stock-list{display:flex;flex-direction:column;gap:12px;margin:24px 0;}
+
+/* ─── 简约卡片 ─── */
+.stock-card{
+  background:var(--surface);
+  border-radius:var(--r);
+  border:1px solid var(--border);
+  padding:20px;
+  transition:all 0.2s;
+  position:relative;
+}
+
+.stock-card:active{
+  transform:scale(0.98);
+  background:var(--surface2);
+}
+
+/* 排名徽章 */
+.rank-badge{
+  position:absolute;top:16px;right:16px;
+  width:32px;height:32px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;font-weight:800;
+  background:var(--surface2);color:var(--text2);
+}
+
+.rank-badge.top-1{background:#f59e0b;color:#000;}
+.rank-badge.top-2{background:#94a3b8;color:#000;}
+.rank-badge.top-3{background:#cd7f32;color:#000;}
+
+/* 基本信息行 */
+.stock-header{
+  display:flex;align-items:center;gap:12px;
+  margin-bottom:16px;
+}
+
+.stock-logo{
+  width:40px;height:40px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;font-weight:800;color:#fff;
+  background:linear-gradient(135deg,var(--blue),var(--purple));
+}
+
+.stock-info{flex:1;}
+.stock-name{
+  font-size:17px;font-weight:700;
+  color:var(--text);
+  margin-bottom:2px;
+}
+.stock-ticker{
+  font-size:13px;color:var(--text3);
+  font-weight:500;
+}
+
+.stock-price{
+  text-align:right;
+}
+.price-value{
+  font-size:18px;font-weight:700;
+  color:var(--text);
+  margin-bottom:4px;
+}
+.price-change{
+  font-size:13px;font-weight:600;
+  padding:4px 8px;border-radius:6px;
+  display:inline-block;
+}
+.price-change.positive{color:var(--green);background:rgba(52,211,153,0.1);}
+.price-change.negative{color:var(--red);background:rgba(248,113,113,0.1);}
+
+/* 核心指标 */
+.stock-metrics{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:16px;margin-bottom:16px;
+  padding:16px 0;border-top:1px solid var(--border);
+}
+
+.metric-item{text-align:center;}
+.metric-label{
+  font-size:11px;color:var(--text3);
+  font-weight:600;letter-spacing:0.5px;
+  margin-bottom:6px;
+}
+.metric-value{
+  font-size:15px;font-weight:700;
+  color:var(--text);
+}
+
+/* 财报信息 */
+.earnings-info{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 0;border-top:1px solid var(--border);
+}
+
+.earnings-date{
+  font-size:13px;color:var(--text2);
+  display:flex;align-items:center;gap:8px;
+}
+.earnings-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--amber);
+  animation:pulse 2s infinite;
+}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.5;}}
+
+.earnings-status{
+  font-size:12px;font-weight:600;
+  padding:4px 10px;border-radius:12px;
+  background:rgba(251,191,36,0.1);color:var(--amber);
+}
+
+/* 投资潜力 */
+.investment-potential{
+  padding-top:12px;border-top:1px solid var(--border);
+}
+
+.potential-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:12px;
+}
+.potential-label{font-size:13px;color:var(--text3);font-weight:600;}
+.potential-score{
+  font-size:16px;font-weight:800;
+  color:var(--blue);
+}
+
+.potential-bar{
+  height:4px;background:var(--surface2);
+  border-radius:2px;overflow:hidden;margin-bottom:12px;
+}
+.potential-fill{
+  height:100%;border-radius:2px;
+  background:linear-gradient(90deg,var(--blue),var(--green));
+}
+
+.potential-tags{
+  display:flex;flex-wrap:wrap;gap:6px;
+  margin-bottom:8px;
+}
+.potential-tag{
+  font-size:11px;font-weight:600;
+  padding:3px 8px;border-radius:10px;
+  background:var(--surface2);color:var(--text2);
+}
+
+.potential-note{
+  font-size:13px;color:var(--text2);
+  line-height:1.5;
+}
+
+/* 免责声明 */
+.disclaimer{
+  padding:16px;background:var(--surface);
+  border-radius:var(--r);border:1px solid var(--border);
+  margin-top:24px;
+}
+.disclaimer p{
+  font-size:12px;color:var(--text3);
+  line-height:1.6;
+}
+.disclaimer strong{color:var(--amber);}
+
+/* 滚动条优化 */
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--surface2);border-radius:2px;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-title">港美股 Top10</div>
+  <div class="header-sub">财报日历 · 数据截至 2026-03-01</div>
+  
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('us')">美股 Top10</button>
+    <button class="tab-btn" onclick="switchTab('hk')">港股 Top10</button>
+  </div>
+</div>
+
+<div class="content">
+  <!-- 美股 -->
+  <div class="tab-panel active" id="tab-us">
+    <div class="stock-list" id="us-list"></div>
+  </div>
+
+  <!-- 港股 -->
+  <div class="tab-panel" id="tab-hk">
+    <div class="stock-list" id="hk-list"></div>
+  </div>
+
+  <div class="disclaimer">
+    <p><strong>免责声明</strong> · 以上数据均为估算，财报日期以公司官方公告为准。市值、ROE 截至 2026 年 3 月，投资潜力评分综合分析师预期，不构成任何投资建议。投资有风险，入市需谨慎。</p>
+  </div>
+</div>
+
+<script>
+// 美股数据
+const US_STOCKS = [
+  {
+    rank: 1, name: 'Apple', ticker: 'AAPL', logo: 'A',
+    price: '$245.80', change: '+2.15%', positive: true,
+    metrics: { cap: '$3.85T', pe: '32.8x', roe: '156.3%' },
+    earnings: { date: '2026-04-30', note: 'Q2 FY2026' },
+    potential: { score: 88, tags: ['现金奶牛', '服务增长', '回购王者', 'AI布局'], note: '服务业务持续高增，AI功能驱动换机潮，估值合理护城河深' }
+  },
+  {
+    rank: 2, name: 'Microsoft', ticker: 'MSFT', logo: 'M',
+    price: '$550.75', change: '+1.82%', positive: true,
+    metrics: { cap: '$4.12T', pe: '38.6x', roe: '42.8%' },
+    earnings: { date: '2026-04-29', note: 'Q3 FY2026' },
+    potential: { score: 92, tags: ['云计算龙头', 'Copilot变现', 'Azure高增', '稳健成长'], note: 'Azure增速回升，Copilot商业化加速，AI+云双轮驱动，质地最优' }
+  },
+  {
+    rank: 3, name: 'NVIDIA', ticker: 'NVDA', logo: 'N',
+    price: '$1,280.50', change: '+3.45%', positive: true,
+    metrics: { cap: '$3.15T', pe: '48.2x', roe: '138.5%' },
+    earnings: { date: '2026-05-28', note: 'Q1 FY2027' },
+    potential: { score: 95, tags: ['AI算力核心', '数据中心爆发', 'Blackwell放量', '高增长'], note: 'AI基础设施核心受益者，Blackwell架构需求旺盛，增长确定性极高' }
+  },
+  {
+    rank: 4, name: 'Amazon', ticker: 'AMZN', logo: 'A',
+    price: '$220.45', change: '+1.85%', positive: true,
+    metrics: { cap: '$2.28T', pe: '68.5x', roe: '22.6%' },
+    earnings: { date: '2026-05-01', note: 'Q1 2026' },
+    potential: { score: 86, tags: ['AWS加速', '广告高增', '利润释放', '物流优化'], note: 'AWS重回高增轨道，广告业务超预期，利润率持续扩张' }
+  },
+  {
+    rank: 5, name: 'Alphabet', ticker: 'GOOGL', logo: 'G',
+    price: '$185.30', change: '+0.92%', positive: true,
+    metrics: { cap: '$2.32T', pe: '28.4x', roe: '32.8%' },
+    earnings: { date: '2026-04-28', note: 'Q1 2026' },
+    potential: { score: 84, tags: ['搜索护城河', 'Gemini AI', 'YouTube增长', '低估值'], note: '估值相对低廉，AI搜索防御稳固，云业务加速，性价比突出' }
+  },
+  {
+    rank: 6, name: 'Tesla', ticker: 'TSLA', logo: 'T',
+    price: '$295.60', change: '-1.25%', positive: false,
+    metrics: { cap: '$940B', pe: '65.2x', roe: '28.4%' },
+    earnings: { date: '2026-04-23', note: 'Q1 2026' },
+    potential: { score: 78, tags: ['FSD突破', 'Robotaxi', '储能增长', '高估值'], note: 'FSD商业化加速，Robotaxi落地在即，但估值偏高需谨慎' }
+  },
+  {
+    rank: 7, name: 'Meta', ticker: 'META', logo: 'M',
+    price: '$485.80', change: '+2.38%', positive: true,
+    metrics: { cap: '$1.25T', pe: '24.8x', roe: '26.5%' },
+    earnings: { date: '2026-04-30', note: 'Q1 2026' },
+    potential: { score: 82, tags: ['Reels变现', 'AI推荐', '元宇宙', '估值修复'], note: 'Reels商业化超预期，AI推荐提升效率，估值修复空间大' }
+  },
+  {
+    rank: 8, name: 'Berkshire', ticker: 'BRK.B', logo: 'B',
+    price: '$425.75', change: '+0.68%', positive: true,
+    metrics: { cap: '$890B', pe: '22.4x', roe: '15.8%' },
+    earnings: { date: '2026-05-03', note: 'Q1 2026' },
+    potential: { score: 75, tags: ['价值投资', '保险龙头', '现金充裕', '稳健防御'], note: '巴菲特价值投资典范，现金流充裕，适合稳健型投资者' }
+  },
+  {
+    rank: 9, name: 'JPMorgan', ticker: 'JPM', logo: 'J',
+    price: '$198.40', change: '+0.45%', positive: true,
+    metrics: { cap: '$580B', pe: '12.8x', roe: '18.2%' },
+    earnings: { date: '2026-04-18', note: 'Q1 2026' },
+    potential: { score: 72, tags: ['银行龙头', '净息差改善', '财富管理', '高股息'], note: '净息差持续改善，财富管理业务增长，股息率有吸引力' }
+  },
+  {
+    rank: 10, name: 'Visa', ticker: 'V', logo: 'V',
+    price: '$285.60', change: '+1.12%', positive: true,
+    metrics: { cap: '$560B', pe: '32.6x', roe: '45.8%' },
+    earnings: { date: '2026-04-24', note: 'Q2 FY2026' },
+    potential: { score: 80, tags: ['支付龙头', '跨境增长', '高ROE', '稳定增长'], note: '全球支付网络护城河深，跨境交易增长强劲，盈利质量高' }
+  }
+];
+
+// 港股数据
+const HK_STOCKS = [
+  {
+    rank: 1, name: '腾讯控股', ticker: '0700.HK', logo: '腾',
+    price: 'HK$420.50', change: '+3.15%', positive: true,
+    metrics: { cap: 'HK$4.02T', pe: '20.8x', roe: '22.4%' },
+    earnings: { date: '2026-03-19', note: '2025年全年业绩' },
+    potential: { score: 88, tags: ['微信生态', '游戏复苏', 'AI应用', '回购加速'], note: '微信AI化加速，游戏版号恢复，广告业务高增，估值处历史低位' }
+  },
+  {
+    rank: 2, name: '阿里巴巴', ticker: '9988.HK', logo: '阿',
+    price: 'HK$95.80', change: '+4.25%', positive: true,
+    metrics: { cap: 'HK$2.05T', pe: '12.8x', roe: '14.2%' },
+    earnings: { date: '2026-05-15', note: 'FY2026 Q4' },
+    potential: { score: 85, tags: ['云计算加速', 'AI重构', '电商稳健', '极度低估'], note: '阿里云AI需求爆发，估值处历史极低位，回购力度加大，反转逻辑清晰' }
+  },
+  {
+    rank: 3, name: '美团', ticker: '3690.HK', logo: '美',
+    price: 'HK$108.60', change: '+2.85%', positive: true,
+    metrics: { cap: 'HK$680B', pe: '26.4x', roe: '15.8%' },
+    earnings: { date: '2026-03-25', note: '2025年全年业绩' },
+    potential: { score: 82, tags: ['本地生活龙头', '即时零售', '海外扩张', '利润释放'], note: '核心本地商业利润持续释放，即时零售高速增长，海外Keeta扩张顺利' }
+  },
+  {
+    rank: 4, name: '小米集团', ticker: '1810.HK', logo: '小',
+    price: 'HK$18.95', change: '+5.42%', positive: true,
+    metrics: { cap: 'HK$475B', pe: '22.8x', roe: '16.8%' },
+    earnings: { date: '2026-03-18', note: '2025年全年业绩' },
+    potential: { score: 88, tags: ['汽车放量', '高端手机', 'AIoT生态', '人形机器人'], note: '小米汽车SU7交付超预期，手机高端化成功，机器人概念催化，成长性强' }
+  },
+  {
+    rank: 5, name: '中国移动', ticker: '0941.HK', logo: '移',
+    price: 'HK$72.80', change: '+0.68%', positive: true,
+    metrics: { cap: 'HK$1.52T', pe: '10.4x', roe: '11.8%' },
+    earnings: { date: '2026-03-20', note: '2025年全年业绩' },
+    potential: { score: 70, tags: ['高股息', '5G龙头', '央企稳健', '低估值'], note: '股息率超6%，5G用户持续增长，估值低廉，适合稳健型投资者配置' }
+  },
+  {
+    rank: 6, name: '建设银行', ticker: '0939.HK', logo: '建',
+    price: 'HK$6.85', change: '+0.32%', positive: true,
+    metrics: { cap: 'HK$1.68T', pe: '4.8x', roe: '12.4%' },
+    earnings: { date: '2026-03-28', note: '2025年全年业绩' },
+    potential: { score: 65, tags: ['国有大行', '高股息', '资产质量', '防御性强'], note: '股息率超7%，资产质量稳定，估值极低，适合价值投资者' }
+  },
+  {
+    rank: 7, name: '中国平安', ticker: '2318.HK', logo: '平',
+    price: 'HK$48.60', change: '+1.25%', positive: true,
+    metrics: { cap: 'HK$890B', pe: '8.2x', roe: '14.8%' },
+    earnings: { date: '2026-04-25', note: 'Q1 2026' },
+    potential: { score: 72, tags: ['保险龙头', '综合金融', '科技赋能', '估值修复'], note: '保险业务复苏，科技赋能效果显现，估值修复空间较大' }
+  },
+  {
+    rank: 8, name: '比亚迪', ticker: '1211.HK', logo: '比',
+    price: 'HK$285.40', change: '+2.85%', positive: true,
+    metrics: { cap: 'HK$830B', pe: '28.6x', roe: '18.2%' },
+    earnings: { date: '2026-03-27', note: '2025年全年业绩' },
+    potential: { score: 78, tags: ['新能源车', '电池技术', '海外扩张', '智能化'], note: '新能源车销量领先，电池技术突破，海外市场扩张顺利' }
+  },
+  {
+    rank: 9, name: '京东集团', ticker: '9618.HK', logo: '京',
+    price: 'HK$135.80', change: '+3.15%', positive: true,
+    metrics: { cap: 'HK$430B', pe: '15.8x', roe: '12.6%' },
+    earnings: { date: '2026-05-08', note: 'Q1 2026' },
+    potential: { score: 75, tags: ['自营电商', '物流优势', '百亿补贴', '利润改善'], note: '自营模式护城河深，物流优势明显，百亿补贴拉动增长' }
+  },
+  {
+    rank: 10, name: '网易', ticker: '9999.HK', logo: '网',
+    price: 'HK$185.20', change: '+2.45%', positive: true,
+    metrics: { cap: 'HK$600B', pe: '18.4x', roe: '22.8%' },
+    earnings: { date: '2026-05-12', note: 'Q1 2026' },
+    potential: { score: 80, tags: ['游戏出海', 'AI应用', '云音乐', '稳健增长'], note: '游戏出海顺利，AI技术应用领先，业务多元化发展稳健' }
+  }
+];
+
+// 生成股票卡片HTML
+function createStockCard(stock) {
+  const rankClass = stock.rank <= 3 ? `top-${stock.rank}` : '';
+  
+  return `
+<div class="stock-card">
+  <div class="rank-badge ${rankClass}">${stock.rank}</div>
+  
+  <div class="stock-header">
+    <div class="stock-logo">${stock.logo}</div>
+    <div class="stock-info">
+      <div class="stock-name">${stock.name}</div>
+      <div class="stock-ticker">${stock.ticker}</div>
+    </div>
+    <div class="stock-price">
+      <div class="price-value">${stock.price}</div>
+      <div class="price-change ${stock.positive ? 'positive' : 'negative'}">${stock.change}</div>
+    </div>
+  </div>
+
+  <div class="stock-metrics">
+    <div class="metric-item">
+      <div class="metric-label">市值</div>
+      <div class="metric-value">${stock.metrics.cap}</div>
+    </div>
+    <div class="metric-item">
+      <div class="metric-label">市盈率</div>
+      <div class="metric-value">${stock.metrics.pe}</div>
+    </div>
+    <div class="metric-item">
+      <div class="metric-label">ROE</div>
+      <div class="metric-value">${stock.metrics.roe}</div>
+    </div>
+  </div>
+
+  <div class="earnings-info">
+    <div class="earnings-date">
+      <span class="earnings-dot"></span>
+      <span>财报 · ${stock.earnings.note}</span>
+    </div>
+    <div class="earnings-status">${stock.earnings.date}</div>
+  </div>
+
+  <div class="investment-potential">
+    <div class="potential-header">
+      <span class="potential-label">投资潜力</span>
+      <span class="potential-score">${stock.potential.score}</span>
+    </div>
+    <div class="potential-bar">
+      <div class="potential-fill" style="width: ${stock.potential.score}%"></div>
+    </div>
+    <div class="potential-tags">
+      ${stock.potential.tags.map(tag => `<span class="potential-tag">${tag}</span>`).join('')}
+    </div>
+    <div class="potential-note">${stock.potential.note}</div>
+  </div>
+</div>`;
+}
+
+// 切换标签页
+function switchTab(tab) {
+  // 更新标签按钮状态
+  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+  document.querySelector(`.tab-btn[onclick="switchTab('${tab}')"]`).classList.add('active');
+  
+  // 更新内容面板
+  document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
+  document.getElementById(`tab-${tab}`).classList.add('active');
+  
+  // 渲染对应数据
+  const container = document.getElementById(`${tab}-list`);
+  const stocks = tab === 'us' ? US_STOCKS : HK_STOCKS;
+  container.innerHTML = stocks.map(createStockCard).join('');
+}
+
+// 初始化页面
+document.addEventListener('DOMContentLoaded', () => {
+  switchTab('us');
+});
+</script>
+</body>
+</html>
